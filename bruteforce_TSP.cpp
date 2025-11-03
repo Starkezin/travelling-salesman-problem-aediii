@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <iterator>
+#include <chrono>
 using namespace std;
 
 vector<int> convertVecStrToVecInt(vector<string> vecStrings)
@@ -49,15 +51,17 @@ vector<string> getTokens(string line)
     return vecStrings;
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    ifstream fileInput("tsp3_1194.txt");
+    string filename = argv[1]; 
+
+    ifstream fileInput(filename);
     string line;
     vector<vector<int>> distances;
     if (!fileInput)
     {
         cout << "Falha!" << endl;
-    }
+    }               
     while (getline(fileInput, line))
     {
         vector<string> auxString = getTokens(line);
@@ -66,24 +70,31 @@ int main()
     }
 
     vector<int> list;
-    int max_distance = 9999;
+    int max_distance = 99999999;
     int curr_distance;
     for (int n = 1; n < distances.size(); n++)
     {
         list.push_back(n);
     }
+
+    auto inicio = std::chrono::high_resolution_clock::now();
     do
     {
         vector<int> cr;
-        cr.push_back(0);
-        for (auto x : list)
+        cr.resize(list.size() + 1);
+        cr[0] = 0;
+        for (size_t i = 0; i < list.size(); ++i)
         {
-            cr.push_back(x);
+            cr[i + 1] = list[i];
         }
         curr_distance = calcTSP(cr, distances);
         if (curr_distance < max_distance)
             max_distance = curr_distance;
     } while (next_permutation(list.begin(), list.begin() + distances.size() - 1));
+
+    auto fim = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duracao = fim - inicio;
+    cout << "Tempo de execucao: " << duracao.count() << " ms" << endl;
     cout << "final:" << max_distance << endl;
     return 0;
 }
