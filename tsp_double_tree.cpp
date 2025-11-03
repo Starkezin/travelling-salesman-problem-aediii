@@ -2,11 +2,15 @@
 #include <vector>
 #include <fstream>
 #include <algorithm>
+#include <sstream>
+#include <string>
 using namespace std;
 
+const int INF = 10000000; // weight INF means there is no edge
 int n;
 vector<vector<int>> adj; // adjacency matrix of graph
-const int INF = 10000000; // weight INF means there is no edge
+vector<vector<int>> mst;
+vector<bool> visited;
 
 struct Edge {
     int w = INF, to = -1;
@@ -56,6 +60,7 @@ vector<string> getTokens(string line)
     vecStrings.push_back(token);
     return vecStrings;
 }
+
 vector<vector<int>> final_vec;
 void prim() {
     int total_weight = 0;
@@ -64,11 +69,14 @@ void prim() {
     
     min_e[0].w = 0;
 
+    mst.assign(n, {});
+
     for (int i=0; i<n; ++i) {
         int v = -1;
         for (int j = 0; j < n; ++j) {
             if (!selected[j] && (v == -1 || min_e[j].w < min_e[v].w))
                 v = j;
+
         }
 
         if (min_e[v].w == INF) {
@@ -77,14 +85,13 @@ void prim() {
         }
 
         selected[v] = true;
-        total_weight += min_e[v].w;
         if (min_e[v].to != -1){
             cout << v << " " << min_e[v].to << endl;
-            vector<int> auxil;
-            auxil.push_back(min_e[v].to);
-            auxil.push_back(v);
-            final_vec.push_back(auxil);
-            }
+            int u = min_e[v].to;
+            mst[u].push_back(v);
+            mst[v].push_back(u);
+        }
+
         for (int to = 0; to < n; ++to) {
             if (adj[v][to] < min_e[to].w)
                 min_e[to] = {adj[v][to], v};
@@ -94,48 +101,55 @@ void prim() {
     cout << total_weight << endl;
 }
 
-int main(){
-    string filename = "tsp5_27603.txt"; 
-
-    ifstream fileInput(filename);
-    string line;
-    vector<vector<int>> distances;
-    if (!fileInput)
-    {
-        cout << "Falha!" << endl;
-    }               
-    while (getline(fileInput, line))
-    {
-        vector<string> auxString = getTokens(line);
-        vector<int> auxInt = convertVecStrToVecInt(auxString);
-        adj.push_back(auxInt);
-    }
-    n = adj.size() - 1;
-    prim();
-    vector<int> order;
-    for(auto p:final_vec){
-        if(std::find(order.begin(), order.end(), p.at(0)) != order.end()) {
-    
-} else {
-    order.push_back(p.at(0));
-}
-if(std::find(order.begin(), order.end(), p.at(1)) != order.end()) {
-    
-} else {
-    order.push_back(p.at(1));
-}
-    }
-    int calc_aprox = 0;
-    for(auto inn:order){
-        cout << inn << ' ';
-    }
-    for(auto ll:order){
-        if(ll == 0){
-
-        }else{
-            calc_aprox += adj[ll-1][ll];
+void dfs(int v, vector<int> &order){
+    visited[v] = true;
+    order.push_back(v);
+    for(auto to:mst[v]){
+        if(!visited[to]){
+            dfs(to, order);
+            order.push_back(v);
         }
-            
     }
-    cout << "\n aprox:" << calc_aprox; 
+}
+
+int calcRouteCost(const vector<int> &route) {
+    int cost = 0;
+    for (size_t i = 0; i < route.size() - 1; ++i) {
+        cost += adj[route[i]][route[i + 1]];
+    }
+    cost += adj[route.back()][route[0]];
+    return cost;
+}
+
+int main(int argc, char** argv) {
+    string filename = argv[1];
+    ifstream file(filename);
+    if (!file) { cout << "Erro abrindo arquivo!\n"; return 1; }
+
+    string line;
+    while (getline(file, line)) {
+        vector<int> row;
+        int x;
+        stringstream ss(line);
+        while (ss >> x) row.push_back(x);
+        adj.push_back(row);
+    }
+
+    n = adj.size();
+    prim();
+
+    visited.assign(n, false);
+    vector<int> walk;
+    dfs(0, walk); // caminho W (com repetições)
+
+    // remove vértices repetidos mantendo a primeira visita
+    vector<int> seen(n, false), hamiltonian;
+    for (int v : walk)
+        if (!seen[v]) { hamiltonian.push_back(v); seen[v] = true; }
+
+    int cost = calcRouteCost(hamiltonian);
+
+    cout << "Caminho aproximado: ";
+    for (int v : hamiltonian) cout << v << " ";
+    cout << "\nCusto total: " << cost << endl;
 }
