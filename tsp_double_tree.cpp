@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <sstream>
 #include <string>
+#include <chrono>
 using namespace std;
 
 const int INF = 10000000; // weight INF means there is no edge
@@ -86,7 +87,6 @@ void prim() {
 
         selected[v] = true;
         if (min_e[v].to != -1){
-            cout << v << " " << min_e[v].to << endl;
             int u = min_e[v].to;
             mst[u].push_back(v);
             mst[v].push_back(u);
@@ -98,7 +98,6 @@ void prim() {
         }
     }
 
-    cout << total_weight << endl;
 }
 
 void dfs(int v, vector<int> &order){
@@ -134,20 +133,23 @@ int main(int argc, char** argv) {
         while (ss >> x) row.push_back(x);
         adj.push_back(row);
     }
+    auto ini = chrono::high_resolution_clock::now();
 
     n = adj.size();
     prim();
 
     visited.assign(n, false);
     vector<int> walk;
-    dfs(0, walk); // caminho W (com repetições)
+    dfs(0, walk); 
 
-    // remove vértices repetidos mantendo a primeira visita
     vector<int> seen(n, false), hamiltonian;
     for (int v : walk)
         if (!seen[v]) { hamiltonian.push_back(v); seen[v] = true; }
 
     int cost = calcRouteCost(hamiltonian);
+    auto fim = chrono::high_resolution_clock::now();
+    chrono::duration<double, milli> duracao = fim - ini;
+    cout << "Tempo de execucao (ms): " << duracao.count() << endl;
 
     cout << "Caminho aproximado: ";
     for (int v : hamiltonian) cout << v << " ";
