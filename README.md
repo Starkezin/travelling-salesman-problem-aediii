@@ -19,10 +19,10 @@ O arquivo deve conter a **matriz de adjacência NxN** de distâncias, uma linha 
 ## Compilando (exemplos com g++)
 
 ```bash
-# Compilar brute force (otimizado)
+# Compilar brute force
 g++ tsp_bruteforce.cpp -o tsp_bruteforce
 
-# Compilar nearest neighbor (rápido)
+# Compilar nearest neighbor
 g++ tsp_nearest_neighbor.cpp -o tsp_nn
 ```
 
