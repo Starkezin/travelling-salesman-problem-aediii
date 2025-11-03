@@ -99,6 +99,14 @@ int main(int argc, char **argv)
     auto fim = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duracao = fim - inicio;
     cout << "Tempo de execucao: " << duracao.count() << " ms" << endl;
+    
+    cout << "Rota aproximada: ";
+    for (int city : route) 
+    {
+        cout << city << " ";
+    }   
+    cout << endl;
+
 
     cout << "Distancia total aproximada: " << distance << endl;
     return 0;
